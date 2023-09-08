@@ -1,0 +1,57 @@
+#include "amuse/core.h"
+#include "world.h"
+
+#include <glm/gtc/type_ptr.hpp>
+
+void voxel::World::Init() {
+    transform = &entity->GetComponent<Transform>();
+
+    shader = new gl::Shader("assets/shaders/vertex.glsl", "assets/shaders/fragment.glsl");
+    texture = gl::Texture::Load("assets/textures/pop.png");
+}
+
+void voxel::World::Render() {
+    shader->Bind();
+
+    shader->SetCameraUniforms(*Camera::active);
+    shader->SetSampler2D("u_texture", texture);
+
+    for (auto& [chunkKey, chunk] : chunks) {
+        if (!chunk->IsValid()) { continue; }
+
+        transform->position = glm::vec3(chunk->GetPosition() * CHUNK_SIZE);
+
+        glm::mat4 model = transform->GetModelMatrix();
+        shader->SetUniformMatrix4fv(SHADER_UNIFORM_MODEL, glm::value_ptr(model));
+
+        chunk->GetMesh().DrawTriangles();
+
+        debug::DrawBounds(chunk->GetBounds(), glm::vec3(0.0f, 1.0f, 0.0f));
+    }
+
+    shader->Unbind();
+}
+
+void voxel::World::GenerateChunk(int x, int y, int z) {
+    const ChunkKey position(x, y, z);
+
+    if (chunks.find(position) == chunks.end()) {
+        chunks[position] = new Chunk(x, y, z);
+    }
+
+    Chunk& chunk = *chunks[position];
+
+    for (int x = 0; x < CHUNK_SIZE; x++) {
+        for (int z = 0; z < CHUNK_SIZE; z++) {
+            for (int y = 0; y < CHUNK_SIZE; y++) {
+                const glm::vec3 globalPos = glm::vec3(x, y, z) + glm::vec3(chunk.GetPosition() * CHUNK_SIZE);
+
+                const bool active = globalPos.y < (std::sin(globalPos.x * 0.05f) + std::sin(globalPos.z * 0.05f)) * 7.0f;
+
+                chunk.SetBlock(x, y, z, Block{ active, glm::vec3(1.0f) });
+            }
+        }
+    }
+
+    chunk.GenerateMesh();
+}
