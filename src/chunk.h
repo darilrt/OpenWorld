@@ -5,7 +5,7 @@
 #include <array>
 #include <glm/glm.hpp>
 
-#define CHUNK_SIZE 16
+#define CHUNK_SIZE 32
 
 namespace voxel {
     struct Block {

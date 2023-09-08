@@ -8,7 +8,7 @@ class CameraController : public ecs::Component {
 
 	bool isDragging = false;
 	float senitivity = 45.0f;
-	float cameraSpeed = 10.0f;
+	float cameraSpeed = 25.0f;
 
 public:
 
