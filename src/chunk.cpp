@@ -167,8 +167,8 @@ void voxel::Chunk::GenerateMesh() {
                 if (!block.index) { continue; }
 
                 switch (block.index) {
-                    case 1: currentColor = glm::vec3(0.0f, 1.0f, 0.0f); break;
-                    case 2: currentColor = glm::vec3(0.0f, 0.0f, 1.0f); break;
+                    case 1: currentColor = glm::vec3(0.102f, 0.631f, 0.259f); break;
+                    case 2: currentColor = glm::vec3(0.106f, 0.192f, 0.549f); break;
                 }
 
                 if (!HasBlock(x - 1, y, z)) { FACE_LEFT; COLOR; }

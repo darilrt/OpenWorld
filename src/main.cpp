@@ -17,7 +17,7 @@ public:
 			voxel::World()
 		).GetComponent<voxel::World>();
 
-		#define WORLD_SIZE 2
+		#define WORLD_SIZE 4
 
 		for (int x = -WORLD_SIZE; x < WORLD_SIZE; x++) {
 			for (int z = -WORLD_SIZE; z < WORLD_SIZE; z++) {
@@ -31,7 +31,7 @@ public:
 };
 
 int main(int argc, char* argv[]) {
-	amuse::Init(800, 600);
+	amuse::Init(1920, 1080);
 
 	SceneManager::AddScene<WorldScene>();
 

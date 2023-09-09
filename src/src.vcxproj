@@ -133,6 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="body.cpp" />
     <ClCompile Include="camera_controller.cpp" />
     <ClCompile Include="chunk.cpp" />
     <ClCompile Include="main.cpp" />
@@ -147,6 +148,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="body.h" />
     <ClInclude Include="camera_controller.h" />
     <ClInclude Include="chunk.h" />
     <ClInclude Include="world.h" />

@@ -7,14 +7,16 @@ void voxel::World::Init() {
     transform = &entity->GetComponent<Transform>();
 
     shader = new gl::Shader("assets/shaders/vertex.glsl", "assets/shaders/fragment.glsl");
-    texture = gl::Texture::Load("assets/textures/pop.png");
+    texture = gl::Texture::Load("assets/textures/block.png");
+
+    texture->SetFilter(gl::Texture::Filter::NEAREST);
 }
 
 void voxel::World::Render() {
     shader->Bind();
 
     shader->SetCameraUniforms(*Camera::active);
-    shader->SetSampler2D("u_texture", texture);
+    shader->SetSampler2D("uTexture", texture);
 
     for (auto& [chunkKey, chunk] : chunks) {
         if (!chunk->IsValid()) { continue; }
@@ -25,8 +27,6 @@ void voxel::World::Render() {
         shader->SetUniformMatrix4fv(SHADER_UNIFORM_MODEL, glm::value_ptr(model));
 
         chunk->GetMesh().DrawTriangles();
-
-        debug::DrawBounds(chunk->GetBounds(), glm::vec3(0.0f, 1.0f, 0.0f));
     }
 
     shader->Unbind();
@@ -52,7 +52,7 @@ void voxel::World::GenerateChunk(int x, int y, int z) {
                 if (globalPos.y < height) {
                     index = 1;
 
-                    if (height < 0.0f) {
+                    if (height < -10.0f) {
                         index = 2;
                     }
                 }

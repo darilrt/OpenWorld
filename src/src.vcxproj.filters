@@ -36,6 +36,9 @@
     <ClCompile Include="chunk.cpp">
       <Filter>Voxel</Filter>
     </ClCompile>
+    <ClCompile Include="body.cpp">
+      <Filter>Voxel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -48,6 +51,9 @@
       <Filter>Header Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="chunk.h">
+      <Filter>Voxel</Filter>
+    </ClInclude>
+    <ClInclude Include="body.h">
       <Filter>Voxel</Filter>
     </ClInclude>
   </ItemGroup>
