@@ -17,7 +17,7 @@ public:
 			voxel::World()
 		).GetComponent<voxel::World>();
 
-		#define WORLD_SIZE 4
+		#define WORLD_SIZE 2
 
 		for (int x = -WORLD_SIZE; x < WORLD_SIZE; x++) {
 			for (int z = -WORLD_SIZE; z < WORLD_SIZE; z++) {

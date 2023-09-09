@@ -4,6 +4,7 @@ layout (location = 0) out vec4 fragColor;
 
 in vec3 normal;
 in vec2 uv;
+in vec3 color;
 
 uniform sampler2D u_texture;
 
@@ -16,7 +17,7 @@ void main() {
     // Calculate ambient lighting
     float ambient = 0.405;
     // Calculate final color from diffuse and ambient lighting
-    vec3 color = texture(u_texture, uv).rgb * (diffuse + ambient);
+    vec3 c = color * (diffuse + ambient);
     
-    fragColor = vec4(color, 1.0);
+    fragColor = vec4(c, 1.0);
 }

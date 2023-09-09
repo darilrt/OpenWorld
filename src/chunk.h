@@ -9,15 +9,14 @@
 
 namespace voxel {
     struct Block {
-        bool active;
-        glm::vec3 color;
+        uint32_t index;
     };
 
     class Chunk {
     public:
         std::array<std::array<std::array<Block, CHUNK_SIZE>, CHUNK_SIZE>, CHUNK_SIZE> blocks;
 
-        Chunk() = default;
+        Chunk();
         Chunk(int x, int y, int z);
         Chunk(const glm::ivec3& position);
         ~Chunk();
@@ -36,10 +35,20 @@ namespace voxel {
 
         inline math::Bounds GetBounds() const { return bounds; }
 
+        inline bool HasBlock(int x, int y, int z) {
+            if (x < 0 || x >= CHUNK_SIZE) { return false; }
+            if (y < 0 || y >= CHUNK_SIZE) { return false; }
+            if (z < 0 || z >= CHUNK_SIZE) { return false; }
+            
+            return blocks[x][y][z].index;
+        }
+
     private:
         bool isValid = false;
         gl::Mesh mesh;
         glm::ivec3 position;
         math::Bounds bounds;
+
+        gl::VertexBuffer dataBuffer;
     };
 }

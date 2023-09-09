@@ -46,9 +46,18 @@ void voxel::World::GenerateChunk(int x, int y, int z) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 const glm::vec3 globalPos = glm::vec3(x, y, z) + glm::vec3(chunk.GetPosition() * CHUNK_SIZE);
 
-                const bool active = globalPos.y < (std::sin(globalPos.x * 0.05f) + std::sin(globalPos.z * 0.05f)) * 7.0f;
+                float height = (std::sin(globalPos.x * 0.05f) + std::sin(globalPos.z * 0.05f)) * 7.0f;
+                uint32_t index = 0;
 
-                chunk.SetBlock(x, y, z, Block{ active, glm::vec3(1.0f) });
+                if (globalPos.y < height) {
+                    index = 1;
+
+                    if (height < 0.0f) {
+                        index = 2;
+                    }
+                }
+
+                chunk.SetBlock(x, y, z, Block{ index });
             }
         }
     }

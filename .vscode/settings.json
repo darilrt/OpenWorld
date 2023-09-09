@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.cic": "rust",
+        "*.zs": "rust",
+        "xtree": "cpp",
+        "vector": "cpp"
+    }
+}

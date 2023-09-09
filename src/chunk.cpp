@@ -126,43 +126,62 @@
     \
     index += 4;
 
+voxel::Chunk::Chunk() {
+    mesh.AddVertexBuffer(&dataBuffer, gl::Type::Float, 3);
+}
+
 voxel::Chunk::Chunk(int x, int y, int z) {
     SetPosition(x, y, z);
+    mesh.AddVertexBuffer(&dataBuffer, gl::Type::Float, 3);
 }
 
 voxel::Chunk::Chunk(const glm::ivec3& position) : position(position) {
     SetPosition(position.x, position.y, position.z);
+    mesh.AddVertexBuffer(&dataBuffer, gl::Type::Float, 3);
 }
 
 voxel::Chunk::~Chunk() {}
+
+#define COLOR \
+    colors.push_back(currentColor); \
+    colors.push_back(currentColor); \
+    colors.push_back(currentColor); \
+    colors.push_back(currentColor);
 
 void voxel::Chunk::GenerateMesh() {
     std::vector<glm::vec3>& vertices = mesh.vertices;
     std::vector<glm::vec3>& normals = mesh.normals;
     std::vector<glm::vec2>& uvs = mesh.uvs;
     std::vector<glm::u32vec3>& indices = mesh.indices;
+    std::vector<glm::vec3> colors;
 
     unsigned int index = 0;
+
+    glm::vec3 currentColor = glm::vec3(1.0f);
 
     for (int x = 0; x < CHUNK_SIZE; x++) {
         for (int z = 0; z < CHUNK_SIZE; z++) {
             for (int y = 0; y < CHUNK_SIZE; y++) {
                 const Block& block = blocks[x][y][z];
 
-                if (!block.active) { continue; }
+                if (!block.index) { continue; }
 
-                if ((x > 0 && !blocks[x - 1][y][z].active) || (x == 0)) { FACE_LEFT; }
-                if ((x < CHUNK_SIZE - 1 && !blocks[x + 1][y][z].active) || (x == CHUNK_SIZE - 1)) { FACE_RIGHT; }
+                switch (block.index) {
+                    case 1: currentColor = glm::vec3(0.0f, 1.0f, 0.0f); break;
+                    case 2: currentColor = glm::vec3(0.0f, 0.0f, 1.0f); break;
+                }
 
-                if ((y > 0 && !blocks[x][y - 1][z].active) || (y == 0)) { FACE_BOTTOM; }
-                if ((y < CHUNK_SIZE - 1 && !blocks[x][y + 1][z].active) || (y == CHUNK_SIZE - 1)) { FACE_TOP; }
-
-                if ((z > 0 && !blocks[x][y][z - 1].active) || (z == 0)) { FACE_BACK; }
-                if ((z < CHUNK_SIZE - 1 && !blocks[x][y][z + 1].active) || (z == CHUNK_SIZE - 1)) { FACE_FRONT; }
+                if (!HasBlock(x - 1, y, z)) { FACE_LEFT; COLOR; }
+                if (!HasBlock(x + 1, y, z)) { FACE_RIGHT; COLOR; }
+                if (!HasBlock(x, y - 1, z)) { FACE_BOTTOM; COLOR; }
+                if (!HasBlock(x, y + 1, z)) { FACE_TOP; COLOR; }
+                if (!HasBlock(x, y, z - 1)) { FACE_BACK; COLOR; }
+                if (!HasBlock(x, y, z + 1)) { FACE_FRONT; COLOR; }
             }
         }
     }
 
+    dataBuffer.SetData(colors.data(), colors.size() * sizeof(glm::vec3));
     mesh.Bake();
     isValid = true;
 }
