@@ -1,7 +1,45 @@
 #include "amuse/core.h"
 
 #include "world.h"
+#include "body.h"
 #include "camera_controller.h"
+
+class BodyController : public ecs::Component {
+public:
+	voxel::Body* body;
+	voxel::Body::Box* box;
+
+	void Init() override {
+		body = &entity->GetComponent<voxel::Body>();
+
+		body->AddBox({
+			nullptr,
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
+			glm::vec3(1.0f, 1.0f, 1.0f),
+			glm::vec3(0.0f, 0.0f, 0.0f)
+		});
+
+		box = &body->AddBox({
+			nullptr,
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
+			glm::vec3(0.8f, 2.0f, 0.8f),
+			glm::vec3(0.5f)
+		});
+
+		body->Bake();
+	}
+
+	void Update() override {
+		box->rotation = glm::rotate(
+			box->rotation,
+			3.15f * Input::DeltaTime(),
+			glm::vec3(0.7f, 1.0f, 0.8f)
+		);
+		body->UpdateMatrices();
+	}
+};
 
 class WorldScene : public ecs::System {
 public:
@@ -12,12 +50,22 @@ public:
 			CameraController()
 		);
 
+		ecs::Entity& bodyE = CreateEntity(
+			Transform(),
+			voxel::Body(),
+			BodyController()
+		);
+
+		voxel::Body& body = bodyE.GetComponent<voxel::Body>();
+
+		bodyE.GetComponent<Transform>().position = glm::vec3(0.0f, 0.0f, -20.0f);
+
 		voxel::World& world = CreateEntity(
 			Transform(),
 			voxel::World()
 		).GetComponent<voxel::World>();
 
-		#define WORLD_SIZE 4
+		constexpr int WORLD_SIZE = 4;
 
 		for (int x = -WORLD_SIZE; x < WORLD_SIZE; x++) {
 			for (int z = -WORLD_SIZE; z < WORLD_SIZE; z++) {

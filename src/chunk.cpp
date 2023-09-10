@@ -181,7 +181,7 @@ void voxel::Chunk::GenerateMesh() {
         }
     }
 
-    dataBuffer.SetData(colors.data(), colors.size() * sizeof(glm::vec3));
+    dataBuffer.SetData(colors.data(), colors.size() * sizeof(glm::vec3), gl::VertexBuffer::Dynamic);
     mesh.Bake();
     isValid = true;
 }
