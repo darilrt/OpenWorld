@@ -39,6 +39,8 @@ namespace voxel {
 		void UpdateMatrices();
 
 		void Bake();
+
+		void FromJson(const char* path);
 	};
 }
 

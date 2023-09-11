@@ -1,6 +1,8 @@
 #include "body.h"
+#include "json.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <fstream>
 
 void voxel::Body::Init() {
     transform = &entity->GetComponent<Transform>();
@@ -10,13 +12,9 @@ void voxel::Body::Init() {
     texture = gl::Texture::Load("assets/textures/leaves.png");
     texture->SetFilter(gl::Texture::Filter::NEAREST);
 
-    mesh = new gl::Mesh();
-
     matrixIndexBuffer = new gl::VertexBuffer();
 
     matrices.fill(glm::mat4(1.0f));
-
-    mesh->AddVertexBuffer(matrixIndexBuffer, gl::Type::Float, 1);
 }
 
 void voxel::Body::Render() {
@@ -47,6 +45,13 @@ void voxel::Body::UpdateMatrices() {
 }
 
 void voxel::Body::Bake() {
+    if (mesh != nullptr) {
+        delete mesh;
+    }
+
+    mesh = new gl::Mesh();
+    mesh->AddVertexBuffer(matrixIndexBuffer, gl::Type::Float, 1);
+
     std::vector<glm::vec3>& vertices = mesh->vertices;
     std::vector<glm::vec3>& normals = mesh->normals;
     std::vector<glm::vec2>& uvs = mesh->uvs;
@@ -54,6 +59,8 @@ void voxel::Body::Bake() {
     std::vector<int> matrixIndices;
 
     uint32_t index = 0;
+
+    if (boxes.size() == 0) return;
 
     for (int i = 0; i < boxes.size(); i++) {
         auto& box = boxes[i];
@@ -203,4 +210,78 @@ void voxel::Body::Bake() {
     
     matrixIndexBuffer->SetData(matrixIndices.data(), matrixIndices.size() * sizeof(uint32_t), gl::VertexBuffer::Dynamic);
     mesh->Bake();
+}
+
+void ParseBox(voxel::Body& body, nlohmann::json object, voxel::Body::Box* parent=nullptr) {
+    auto& box = body.AddBox({
+        nullptr,
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        glm::vec3(0.0f, 0.0f, 0.0f)
+    });
+
+    box.parent = parent;
+    
+    if (object.contains("position")) {
+        box.position = {
+            object["position"][0].get<float>(), 
+            object["position"][1].get<float>(), 
+            object["position"][2].get<float>() 
+        };
+    }
+
+    if (object.contains("scale")) {
+        box.scale = {
+            object["scale"][0].get<float>(), 
+            object["scale"][1].get<float>(), 
+            object["scale"][2].get<float>() 
+        };
+    }
+
+    if (object.contains("rotation")) {
+        box.rotation = glm::rotate(box.rotation, glm::radians(object["rotation"][0].get<float>()), glm::vec3(1.0f, 0.0f, 0.0f));
+        box.rotation = glm::rotate(box.rotation, glm::radians(object["rotation"][1].get<float>()), glm::vec3(0.0f, 1.0f, 0.0f));
+        box.rotation = glm::rotate(box.rotation, glm::radians(object["rotation"][2].get<float>()), glm::vec3(0.0f, 0.0f, 1.0f));
+    }
+
+    if (object.contains("pivot")) {
+        box.pivot = {
+            object["pivot"][0].get<float>(), 
+            object["pivot"][1].get<float>(), 
+            object["pivot"][2].get<float>() 
+        };
+    }
+
+    if (object.contains("children")) {
+        for (auto& child : object["children"]) {
+            ParseBox(body, child, &box);
+        }
+    }
+}
+
+void voxel::Body::FromJson(const char* path) {
+    boxes.clear();
+    
+    std::ifstream file(path);
+
+    nlohmann::json jsonObject;
+    try {
+        jsonObject = nlohmann::json::parse(file);
+    }
+    catch (nlohmann::json::parse_error& e) {
+        debug::Log("Failed to parse json file: " + std::string(path) + "\n");
+        debug::Log(e.what() + std::string("\n"));
+		return;
+	}
+
+    file.close();
+
+    if (jsonObject.contains("body")) {
+        for (auto& box : jsonObject["body"]) {
+			ParseBox(*this, box);
+		}
+	}
+
+    Bake();
 }

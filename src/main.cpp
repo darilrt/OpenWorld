@@ -4,39 +4,33 @@
 #include "body.h"
 #include "camera_controller.h"
 
+#include <filesystem>
+
 class BodyController : public ecs::Component {
 public:
 	voxel::Body* body;
 	voxel::Body::Box* box;
+	std::filesystem::file_time_type lastModified;
 
 	void Init() override {
 		body = &entity->GetComponent<voxel::Body>();
 
-		body->AddBox({
-			nullptr,
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
-			glm::vec3(1.0f, 1.0f, 1.0f),
-			glm::vec3(0.0f, 0.0f, 0.0f)
-		});
+		body->FromJson("assets/models/testmodel.json");
 
-		box = &body->AddBox({
-			nullptr,
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
-			glm::vec3(0.8f, 2.0f, 0.8f),
-			glm::vec3(0.5f)
-		});
+		lastModified = std::filesystem::last_write_time("assets/models/testmodel.json");
+		es::AddEventListener("Tick", [&](const es::Event& e) {
+			std::filesystem::file_time_type currentModified = std::filesystem::last_write_time("assets/models/testmodel.json");
+			
+			if (currentModified != lastModified) {
+				lastModified = currentModified;
 
-		body->Bake();
+				body->FromJson("assets/models/testmodel.json");
+				debug::Log("Reloaded model");
+			}
+		});
 	}
 
 	void Update() override {
-		box->rotation = glm::rotate(
-			box->rotation,
-			3.15f * Input::DeltaTime(),
-			glm::vec3(0.7f, 1.0f, 0.8f)
-		);
 		body->UpdateMatrices();
 	}
 };
