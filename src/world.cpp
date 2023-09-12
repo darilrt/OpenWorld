@@ -6,10 +6,10 @@
 void voxel::World::Init() {
     transform = &entity->GetComponent<Transform>();
 
-    shader = new gl::Shader("assets/shaders/vertex.glsl", "assets/shaders/fragment.glsl");
-    texture = gl::Texture::Load("assets/textures/block.png");
-
-    texture->SetFilter(gl::Texture::Filter::NEAREST);
+    shader = &Assets::Get<gl::Shader>("shaders/terrain");
+    texture = &Assets::Get<gl::Texture>("textures/block.png");
+    
+    texture->SetFilter(gl::Texture::Filter::Nearest);
 }
 
 void voxel::World::Render() {

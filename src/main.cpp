@@ -52,7 +52,7 @@ public:
 
 		voxel::Body& body = bodyE.GetComponent<voxel::Body>();
 
-		bodyE.GetComponent<Transform>().position = glm::vec3(0.0f, 0.0f, -20.0f);
+		bodyE.GetComponent<Transform>().position = glm::vec3(0.5f, 0.0f, 0.5f);
 
 		voxel::World& world = CreateEntity(
 			Transform(),

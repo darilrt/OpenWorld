@@ -15,6 +15,15 @@ namespace voxel {
 			glm::quat rotation;
 			glm::vec3 scale;
 			glm::vec3 pivot;
+
+			glm::vec4 uvs[6] = {
+				{ 0.0f, 1.0f, 1.0f, 0.0f },
+				{ 0.0f, 1.0f, 1.0f, 0.0f },
+				{ 0.0f, 1.0f, 1.0f, 0.0f },
+				{ 0.0f, 1.0f, 1.0f, 0.0f },
+				{ 0.0f, 1.0f, 1.0f, 0.0f },
+				{ 0.0f, 1.0f, 1.0f, 0.0f },
+			};
 		};
 
 		Transform* transform;
@@ -22,7 +31,7 @@ namespace voxel {
 		gl::Shader* shader;
 		gl::Texture* texture;
 		gl::Mesh* mesh;
-		gl::VertexBuffer* matrixIndexBuffer;
+		gl::VertexBuffer* boxIndexBuffer;
 
 		std::vector<Box*> boxes;
 		std::array<glm::mat4, 10> matrices;

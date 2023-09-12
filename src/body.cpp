@@ -7,12 +7,12 @@
 void voxel::Body::Init() {
     transform = &entity->GetComponent<Transform>();
 
-    shader = new gl::Shader("assets/shaders/texture.vert", "assets/shaders/texture.frag");
+    shader = &Assets::Get<gl::Shader>("shaders/body");
 
-    texture = gl::Texture::Load("assets/textures/leaves.png");
-    texture->SetFilter(gl::Texture::Filter::NEAREST);
+    texture = &Assets::Get<gl::Texture>("textures/leaves.png");
+    texture->SetFilter(gl::Texture::Filter::Nearest);
 
-    matrixIndexBuffer = new gl::VertexBuffer();
+    boxIndexBuffer = new gl::VertexBuffer();
 
     matrices.fill(glm::mat4(1.0f));
 }
@@ -37,8 +37,8 @@ void voxel::Body::UpdateMatrices() {
 
         glm::mat4 mat = glm::mat4(1.0f);
         mat = glm::translate(mat, box->position);
+        mat = mat * glm::toMat4(box->rotation);
         mat = glm::scale(mat, box->scale);
-        mat = glm::toMat4(box->rotation) * mat;
         mat = glm::translate(mat, -box->pivot);
         matrices[i] = mat;
 	}
@@ -50,13 +50,13 @@ void voxel::Body::Bake() {
     }
 
     mesh = new gl::Mesh();
-    mesh->AddVertexBuffer(matrixIndexBuffer, gl::Type::Float, 1);
+    mesh->AddVertexBuffer(boxIndexBuffer, gl::Type::Float, 1);
 
     std::vector<glm::vec3>& vertices = mesh->vertices;
     std::vector<glm::vec3>& normals = mesh->normals;
     std::vector<glm::vec2>& uvs = mesh->uvs;
     std::vector<glm::uvec3>& indices = mesh->indices;
-    std::vector<int> matrixIndices;
+    std::vector<int> boxxIndices;
 
     uint32_t index = 0;
 
@@ -65,54 +65,43 @@ void voxel::Body::Bake() {
     for (int i = 0; i < boxes.size(); i++) {
         auto& box = boxes[i];
 
-        // Matrix
-
-        glm::mat4 mat = glm::mat4(1.0f);
-        mat = glm::rotate(mat, box->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-        mat = glm::rotate(mat, box->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-        mat = glm::rotate(mat, box->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-        mat = glm::translate(mat, -box->pivot);
-        mat = glm::translate(mat, box->position);
-        mat = glm::scale(mat, box->scale);
-        matrices[i] = mat;
-           
         // Indices 
 
-        matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i);
-        matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i);
-        matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i);
-        matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i);
-        matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i);
-        matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i); matrixIndices.push_back(i);
+        boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i);
+        boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i);
+        boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i);
+        boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i);
+        boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i);
+        boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i); boxxIndices.push_back(i);
 
         // Mesh
 
-        vertices.push_back({ 0.0f       , 0.0f       , 0.0f + 1.0f });
-        vertices.push_back({ 0.0f + 1.0f, 0.0f       , 0.0f + 1.0f });
-        vertices.push_back({ 0.0f + 1.0f, 0.0f + 1.0f, 0.0f + 1.0f });
         vertices.push_back({ 0.0f       , 0.0f + 1.0f, 0.0f + 1.0f });
+        vertices.push_back({ 0.0f + 1.0f, 0.0f + 1.0f, 0.0f + 1.0f });
+        vertices.push_back({ 0.0f + 1.0f, 0.0f       , 0.0f + 1.0f });
+        vertices.push_back({ 0.0f       , 0.0f       , 0.0f + 1.0f });
 
+        vertices.push_back({ 0.0f + 1.0f, 0.0f + 1.0f, 0.0f });
+        vertices.push_back({ 0.0f       , 0.0f + 1.0f, 0.0f });
         vertices.push_back({ 0.0f       , 0.0f       , 0.0f });
         vertices.push_back({ 0.0f + 1.0f, 0.0f       , 0.0f });
+
+        vertices.push_back({ 0.0f       , 0.0f + 1.0f, 0.0f });
+        vertices.push_back({ 0.0f       , 0.0f + 1.0f, 0.0f + 1.0f });
+        vertices.push_back({ 0.0f       , 0.0f       , 0.0f + 1.0f });
+        vertices.push_back({ 0.0f       , 0.0f       , 0.0f });
+
+        vertices.push_back({ 0.0f + 1.0f, 0.0f + 1.0f, 0.0f + 1.0f });
+        vertices.push_back({ 0.0f + 1.0f, 0.0f + 1.0f, 0.0f });
+        vertices.push_back({ 0.0f + 1.0f, 0.0f       , 0.0f });
+        vertices.push_back({ 0.0f + 1.0f, 0.0f       , 0.0f + 1.0f });
+
+        vertices.push_back({ 0.0f       , 0.0f + 1.0f, 0.0f + 1.0f });
+        vertices.push_back({ 0.0f + 1.0f, 0.0f + 1.0f, 0.0f + 1.0f });
         vertices.push_back({ 0.0f + 1.0f, 0.0f + 1.0f, 0.0f });
         vertices.push_back({ 0.0f       , 0.0f + 1.0f, 0.0f });
 
         vertices.push_back({ 0.0f       , 0.0f       , 0.0f });
-        vertices.push_back({ 0.0f       , 0.0f       , 0.0f + 1.0f });
-        vertices.push_back({ 0.0f       , 0.0f + 1.0f, 0.0f + 1.0f });
-        vertices.push_back({ 0.0f       , 0.0f + 1.0f, 0.0f });
-
-        vertices.push_back({ 0.0f + 1.0f, 0.0f       , 0.0f });
-        vertices.push_back({ 0.0f + 1.0f, 0.0f       , 0.0f + 1.0f });
-        vertices.push_back({ 0.0f + 1.0f, 0.0f + 1.0f, 0.0f + 1.0f });
-        vertices.push_back({ 0.0f + 1.0f, 0.0f + 1.0f, 0.0f });
-
-        vertices.push_back({ 0.0f       , 0.0f + 1.0f, 0.0f });
-        vertices.push_back({ 0.0f + 1.0f, 0.0f + 1.0f, 0.0f });
-        vertices.push_back({ 0.0f + 1.0f, 0.0f + 1.0f, 0.0f + 1.0f });
-        vertices.push_back({ 0.0f       , 0.0f + 1.0f, 0.0f + 1.0f });
-
-        vertices.push_back({ 0.0f       , 0.0f       , 0.0f });
         vertices.push_back({ 0.0f + 1.0f, 0.0f       , 0.0f });
         vertices.push_back({ 0.0f + 1.0f, 0.0f       , 0.0f + 1.0f });
         vertices.push_back({ 0.0f       , 0.0f       , 0.0f + 1.0f });
@@ -147,38 +136,17 @@ void voxel::Body::Bake() {
         normals.push_back({ 0.0f, -1.0f, 0.0f });
         normals.push_back({ 0.0f, -1.0f, 0.0f });
 
-        uvs.push_back({ 0.0f, 1.0f });
-        uvs.push_back({ 1.0f, 1.0f });
-        uvs.push_back({ 1.0f, 0.0f });
-        uvs.push_back({ 0.0f, 0.0f });
+        for (int i = 0; i < 6; i++) {
+            const glm::vec4 uv = box->uvs[i];
 
-        uvs.push_back({ 0.0f, 1.0f });
-        uvs.push_back({ 1.0f, 1.0f });
-        uvs.push_back({ 1.0f, 0.0f });
-        uvs.push_back({ 0.0f, 0.0f });
+            uvs.push_back({ uv.x, uv.y });
+            uvs.push_back({ uv.z, uv.y });
+            uvs.push_back({ uv.z, uv.w });
+            uvs.push_back({ uv.x, uv.w });
+		}
 
-        uvs.push_back({ 0.0f, 1.0f });
-        uvs.push_back({ 1.0f, 1.0f });
-        uvs.push_back({ 1.0f, 0.0f });
-        uvs.push_back({ 0.0f, 0.0f });
-
-        uvs.push_back({ 0.0f, 1.0f });
-        uvs.push_back({ 1.0f, 1.0f });
-        uvs.push_back({ 1.0f, 0.0f });
-        uvs.push_back({ 0.0f, 0.0f });
-
-        uvs.push_back({ 0.0f, 1.0f });
-        uvs.push_back({ 1.0f, 1.0f });
-        uvs.push_back({ 1.0f, 0.0f });
-        uvs.push_back({ 0.0f, 0.0f });
-
-        uvs.push_back({ 0.0f, 1.0f });
-        uvs.push_back({ 1.0f, 1.0f });
-        uvs.push_back({ 1.0f, 0.0f });
-        uvs.push_back({ 0.0f, 0.0f });
-
-        indices.push_back({ index, index + 1, index + 2 });
-        indices.push_back({ index, index + 2, index + 3 });
+        indices.push_back({ index + 2, index + 1, index });
+        indices.push_back({ index + 3, index + 2, index });
 
         index += 4;
 
@@ -187,8 +155,8 @@ void voxel::Body::Bake() {
 
         index += 4;
 
-        indices.push_back({ index, index + 1, index + 2 });
-        indices.push_back({ index, index + 2, index + 3 });
+        indices.push_back({ index + 2, index + 1, index });
+        indices.push_back({ index + 3, index + 2, index });
 
         index += 4;
 
@@ -197,8 +165,8 @@ void voxel::Body::Bake() {
 
         index += 4;
 
-        indices.push_back({ index, index + 2, index + 1 });
-        indices.push_back({ index, index + 3, index + 2 });
+        indices.push_back({ index + 1, index + 2, index });
+        indices.push_back({ index + 2, index + 3, index });
 
         index += 4;
 
@@ -208,12 +176,20 @@ void voxel::Body::Bake() {
         index += 4;
     }
     
-    matrixIndexBuffer->SetData(matrixIndices.data(), matrixIndices.size() * sizeof(uint32_t), gl::VertexBuffer::Dynamic);
+    UpdateMatrices();
+
+    boxIndexBuffer->SetData(boxxIndices.data(), boxxIndices.size() * sizeof(uint32_t), gl::VertexBuffer::Dynamic);
     mesh->Bake();
 }
 
 void ParseBox(voxel::Body& body, nlohmann::json object, voxel::Body::Box* parent=nullptr) {
-    auto& box = body.AddBox({
+    if (object.contains("hide")) {
+        if (object["hide"].get<bool>()) {
+			return;
+		}
+    }
+
+    voxel::Body::Box& box = body.AddBox({
         nullptr,
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::quat(1.0f, 0.0f, 0.0f, 0.0f),
@@ -225,8 +201,8 @@ void ParseBox(voxel::Body& body, nlohmann::json object, voxel::Body::Box* parent
     
     if (object.contains("position")) {
         box.position = {
-            object["position"][0].get<float>(), 
-            object["position"][1].get<float>(), 
+            object["position"][0].get<float>(),
+            object["position"][1].get<float>(),
             object["position"][2].get<float>() 
         };
     }
@@ -258,6 +234,18 @@ void ParseBox(voxel::Body& body, nlohmann::json object, voxel::Body::Box* parent
             ParseBox(body, child, &box);
         }
     }
+
+    if (object.contains("uv")) {
+        int size = object["uv"].size() >= 6 ? 6 : object["uv"].size();
+        for (int i = 0; i < size; i++) {
+            box.uvs[i] = {
+				object["uv"][i][0].get<float>(),
+				object["uv"][i][1].get<float>(),
+				object["uv"][i][2].get<float>(),
+				object["uv"][i][3].get<float>()
+			};
+		}
+    }
 }
 
 void voxel::Body::FromJson(const char* path) {
@@ -277,6 +265,11 @@ void voxel::Body::FromJson(const char* path) {
 
     file.close();
 
+    if (jsonObject.contains("texture")) {
+        texture = &Assets::Get<gl::Texture>(jsonObject["texture"].get<std::string>());
+        texture->SetFilter(gl::Texture::Filter::Nearest);
+    }
+    
     if (jsonObject.contains("body")) {
         for (auto& box : jsonObject["body"]) {
 			ParseBox(*this, box);
