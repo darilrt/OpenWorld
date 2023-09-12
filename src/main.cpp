@@ -17,16 +17,9 @@ public:
 
 		body->FromJson("assets/models/testmodel.json");
 
-		lastModified = std::filesystem::last_write_time("assets/models/testmodel.json");
-		es::AddEventListener("Tick", [&](const es::Event& e) {
-			std::filesystem::file_time_type currentModified = std::filesystem::last_write_time("assets/models/testmodel.json");
-			
-			if (currentModified != lastModified) {
-				lastModified = currentModified;
-
-				body->FromJson("assets/models/testmodel.json");
-				debug::Log("Reloaded model");
-			}
+		io::FileWatcher::OnFileChange("assets/models/testmodel.json", [&]() {
+			body->FromJson("assets/models/testmodel.json");
+			debug::Log("Reloaded model");
 		});
 	}
 
