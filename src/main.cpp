@@ -6,28 +6,6 @@
 
 #include <filesystem>
 
-class BodyController : public ecs::Component {
-public:
-	voxel::Body* body;
-	voxel::Body::Box* box;
-	std::filesystem::file_time_type lastModified;
-
-	void Init() override {
-		body = &entity->GetComponent<voxel::Body>();
-
-		body->FromJson("assets/models/testmodel.json");
-
-		io::FileWatcher::OnFileChange("assets/models/testmodel.json", [&]() {
-			body->FromJson("assets/models/testmodel.json");
-			debug::Log("Reloaded model");
-		});
-	}
-
-	void Update() override {
-		body->UpdateMatrices();
-	}
-};
-
 class WorldScene : public ecs::System {
 public:
 	void Init() override {
@@ -39,8 +17,6 @@ public:
 
 		ecs::Entity& bodyE = CreateEntity(
 			Transform(),
-			voxel::Body(),
-			BodyController()
 		);
 
 		voxel::Body& body = bodyE.GetComponent<voxel::Body>();

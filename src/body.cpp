@@ -9,7 +9,7 @@ void voxel::Body::Init() {
 
     shader = &Assets::Get<gl::Shader>("shaders/body");
 
-    texture = &Assets::Get<gl::Texture>("textures/leaves.png");
+    texture = &Assets::Get<gl::Texture>("textures/uvchecker.png");
     texture->SetFilter(gl::Texture::Filter::Nearest);
 
     boxIndexBuffer = new gl::VertexBuffer();
