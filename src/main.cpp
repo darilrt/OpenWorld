@@ -9,6 +9,16 @@
 class WorldScene : public ecs::System {
 public:
 	void Init() override {
+		Screen::Get()->window->SetResizable(true);
+
+		es::AddEventListener("WindowResize", [&](const es::Event& e) {
+			Camera::active->SetViewport({
+				0, 0,
+				e.window.width,
+				e.window.height
+			});
+		});
+
 		ecs::Entity& camera = CreateEntity(
 			Transform(),
 			Camera(),
@@ -18,8 +28,6 @@ public:
 		ecs::Entity& bodyE = CreateEntity(
 			Transform(),
 		);
-
-		voxel::Body& body = bodyE.GetComponent<voxel::Body>();
 
 		bodyE.GetComponent<Transform>().position = glm::vec3(0.5f, 0.0f, 0.5f);
 
