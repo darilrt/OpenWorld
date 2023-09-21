@@ -26,7 +26,7 @@ public:
 		);
 
 		ecs::Entity& bodyE = CreateEntity(
-			Transform(),
+			Transform()
 		);
 
 		bodyE.GetComponent<Transform>().position = glm::vec3(0.5f, 0.0f, 0.5f);
